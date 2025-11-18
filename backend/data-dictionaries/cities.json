@@ -1,0 +1,73 @@
+[
+  {
+    "name": "Москва",
+    "region": "77",
+    "type": "city",
+    "population": 12600000,
+    "weight": 0.20
+  },
+  {
+    "name": "Санкт-Петербург",
+    "region": "78",
+    "type": "city",
+    "population": 5400000,
+    "weight": 0.15
+  },
+  {
+    "name": "Подольск",
+    "region": "50",
+    "type": "city",
+    "population": 300000,
+    "weight": 0.05
+  },
+  {
+    "name": "Екатеринбург",
+    "region": "66",
+    "type": "city",
+    "population": 1500000,
+    "weight": 0.08
+  },
+  {
+    "name": "Новосибирск",
+    "region": "54",
+    "type": "city",
+    "population": 1600000,
+    "weight": 0.09
+  },
+  {
+    "name": "Краснодар",
+    "region": "23",
+    "type": "city",
+    "population": 900000,
+    "weight": 0.06
+  },
+  {
+    "name": "Пермь",
+    "region": "59",
+    "type": "city",
+    "population": 1000000,
+    "weight": 0.07
+  },
+  {
+    "name": "Ростов-на-Дону",
+    "region": "61",
+    "type": "city",
+    "population": 1100000,
+    "weight": 0.07
+  },
+  {
+    "name": "Самара",
+    "region": "63",
+    "type": "city",
+    "population": 1100000,
+    "weight": 0.07
+  },
+  {
+    "name": "Коломна",
+    "region": "50",
+    "type": "city",
+    "population": 140000,
+    "weight": 0.02
+  }
+]
+

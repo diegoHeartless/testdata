@@ -1,0 +1,78 @@
+[
+  {
+    "name": "ул. Ленина",
+    "type": "street",
+    "weight": 0.15
+  },
+  {
+    "name": "пр. Мира",
+    "type": "avenue",
+    "weight": 0.12
+  },
+  {
+    "name": "ул. Советская",
+    "type": "street",
+    "weight": 0.10
+  },
+  {
+    "name": "пер. Центральный",
+    "type": "lane",
+    "weight": 0.08
+  },
+  {
+    "name": "ул. Победы",
+    "type": "street",
+    "weight": 0.08
+  },
+  {
+    "name": "пр. Ленинградский",
+    "type": "avenue",
+    "weight": 0.07
+  },
+  {
+    "name": "ул. Гагарина",
+    "type": "street",
+    "weight": 0.06
+  },
+  {
+    "name": "ул. Пушкина",
+    "type": "street",
+    "weight": 0.06
+  },
+  {
+    "name": "б-р Комсомольский",
+    "type": "boulevard",
+    "weight": 0.05
+  },
+  {
+    "name": "ул. Садовая",
+    "type": "street",
+    "weight": 0.05
+  },
+  {
+    "name": "ул. Новая",
+    "type": "street",
+    "weight": 0.04
+  },
+  {
+    "name": "ул. Зеленая",
+    "type": "street",
+    "weight": 0.04
+  },
+  {
+    "name": "ул. Лесная",
+    "type": "street",
+    "weight": 0.03
+  },
+  {
+    "name": "ул. Речная",
+    "type": "street",
+    "weight": 0.03
+  },
+  {
+    "name": "ул. Парковая",
+    "type": "street",
+    "weight": 0.02
+  }
+]
+

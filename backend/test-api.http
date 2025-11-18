@@ -1,0 +1,51 @@
+### Synthetic ID Generator API Tests
+
+### 1. Generate Profile (Male)
+POST http://localhost:3000/api/v1/profiles/generate
+X-API-Key: test-api-key
+Content-Type: application/json
+
+{
+  "gender": "male",
+  "age_range": [25, 35],
+  "include_documents": ["passport", "inn", "snils"]
+}
+
+### 2. Generate Profile (Female)
+POST http://localhost:3000/api/v1/profiles/generate
+X-API-Key: test-api-key
+Content-Type: application/json
+
+{
+  "gender": "female",
+  "age_range": [30, 40],
+  "region": "77",
+  "include_documents": ["passport", "inn", "snils"]
+}
+
+### 3. Generate Profile (Random)
+POST http://localhost:3000/api/v1/profiles/generate
+X-API-Key: test-api-key
+Content-Type: application/json
+
+{
+  "gender": "random",
+  "age_range": [20, 50]
+}
+
+### 4. Get Profile by ID (replace {id} with actual ID)
+GET http://localhost:3000/api/v1/profiles/{id}
+X-API-Key: test-api-key
+
+### 5. List Profiles
+GET http://localhost:3000/api/v1/profiles?page=1&limit=10
+X-API-Key: test-api-key
+
+### 6. Export Profile as JSON (replace {id} with actual ID)
+GET http://localhost:3000/api/v1/profiles/{id}/export?format=json
+X-API-Key: test-api-key
+
+### 7. Delete Profile (replace {id} with actual ID)
+DELETE http://localhost:3000/api/v1/profiles/{id}
+X-API-Key: test-api-key
+
