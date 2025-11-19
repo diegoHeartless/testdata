@@ -1,0 +1,36 @@
+[
+  {
+    "bin": "427655",
+    "brand": "VISA",
+    "issuer": "Сбербанк",
+    "product": "Classic",
+    "type": "debit",
+    "weight": 0.35
+  },
+  {
+    "bin": "546938",
+    "brand": "MASTERCARD",
+    "issuer": "Тинькофф",
+    "product": "Platinum",
+    "type": "credit",
+    "weight": 0.25
+  },
+  {
+    "bin": "220070",
+    "brand": "MIR",
+    "issuer": "ВТБ",
+    "product": "Основная",
+    "type": "debit",
+    "weight": 0.2
+  },
+  {
+    "bin": "489049",
+    "brand": "VISA",
+    "issuer": "Альфа-Банк",
+    "product": "Premium",
+    "type": "credit",
+    "weight": 0.2
+  }
+]
+
+
