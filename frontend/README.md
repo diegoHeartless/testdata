@@ -87,3 +87,4 @@ Frontend использует API клиент из `src/services/api.ts` для
 Все запросы требуют API ключ в заголовке `X-API-Key`.
 
 
+

@@ -1,9 +1,23 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
+import { ApiKeyService } from '../services/api-key.service';
 
+/**
+ * Guard для проверки API ключей через ApiKeyService.
+ * Сохраняет найденный ключ в request.apiKeyEntity для использования в контроллерах.
+ */
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  constructor(private readonly apiKeyService: ApiKeyService) {}
+
+  async canActivate(
+    context: ExecutionContext,
+  ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const apiKey = request.headers['x-api-key'];
 
@@ -17,21 +31,23 @@ export class ApiKeyGuard implements CanActivate {
       });
     }
 
-    // TODO: Реализовать проверку API ключа в базе данных
-    // Для MVP: проверяем наличие ключа (любой ключ принимается)
-    if (apiKey === 'test-api-key' || apiKey.length > 0) {
-      // Сохраняем API ключ в request для использования в сервисах
-      request.apiKey = apiKey;
-      return true;
+    const validation = await this.apiKeyService.validate(apiKey);
+
+    if (!validation.key) {
+      throw new UnauthorizedException({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: validation.reason || 'Invalid API key',
+        },
+      });
     }
 
-    throw new UnauthorizedException({
-      success: false,
-      error: {
-        code: 'UNAUTHORIZED',
-        message: 'Invalid API key',
-      },
-    });
+    // Сохраняем сущность ключа в request для использования в контроллерах/сервисах
+    request.apiKeyEntity = validation.key;
+    request.apiKey = apiKey; // Для обратной совместимости
+
+    return true;
   }
 }
 
