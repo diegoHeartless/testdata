@@ -13,17 +13,14 @@ export class ProfilesService {
     private readonly profileRepository: Repository<ProfileEntity>,
   ) {}
 
-  async generate(
-    params: GenerationParams,
-    options?: { sourceKeyId?: string },
-  ): Promise<Profile> {
+  async generate(params: GenerationParams, options?: { sourceKeyId?: string }): Promise<Profile> {
     const profile = this.coreProfileService.generate(params);
 
     const entity = this.profileRepository.create({
       id: profile.id,
-      payload: profile,
+      payload: profile as unknown as Record<string, unknown>,
       sourceKeyId: options?.sourceKeyId,
-      expiresAt: profile.expires_at ? new Date(profile.expires_at) : null,
+      expiresAt: profile.expires_at ? new Date(profile.expires_at) : undefined,
     });
 
     const saved = await this.profileRepository.save(entity);
@@ -51,7 +48,10 @@ export class ProfilesService {
     return this.mapEntityToProfile(entity);
   }
 
-  async list(page: number = 1, limit: number = 20): Promise<{
+  async list(
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{
     profiles: Array<{ id: string; personal: any; created_at: string }>;
     pagination: {
       page: number;
@@ -103,15 +103,12 @@ export class ProfilesService {
   }
 
   private mapEntityToProfile(entity: ProfileEntity): Profile {
-    const payload = entity.payload;
+    const payload = entity.payload as unknown as Profile;
     return {
       ...payload,
       id: entity.id,
       created_at: entity.createdAt.toISOString(),
-      expires_at: entity.expiresAt
-        ? entity.expiresAt.toISOString()
-        : payload.expires_at,
+      expires_at: entity.expiresAt ? entity.expiresAt.toISOString() : payload.expires_at,
     };
   }
 }
-
