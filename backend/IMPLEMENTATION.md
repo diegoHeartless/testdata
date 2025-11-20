@@ -13,6 +13,7 @@
 #### Auth Module (`src/modules/auth/`)
 - ✅ `ApiKeyGuard` - защита endpoints через API ключи
 - ✅ Базовая проверка API ключа (для MVP)
+- ✅ `ApiKeyThrottlerGuard` — rate limiting на основе лимитов ключа с хранением счётчиков в Redis
 
 #### Profiles Module (`src/modules/profiles/`)
 - ✅ `ProfilesController` - REST API endpoints
@@ -43,6 +44,7 @@
 - ✅ `ProfileService` - основной сервис генерации профилей
 - ✅ Интеграция всех генераторов
 - ✅ Генерация полного профиля с документами
+- ✅ Сохранение профилей в PostgreSQL через TypeORM (`ProfileEntity`) с привязкой к API ключам
 
 ### 5. Утилиты (`src/utils/`)
 
@@ -76,12 +78,13 @@
 - ✅ Поддержка переменных окружения
 - ✅ CORS настройка
 - ✅ Глобальный префикс API `/api/v1`
+- ✅ ThrottlerModule с Redis-хранилищем (`RedisThrottleStorage`) для rate limiting
 
 ## Что нужно доработать (TODO)
 
 ### Приоритет 1 (MVP)
-- [ ] Rate limiting middleware
-- [ ] Хранение профилей в базе данных (сейчас в памяти)
+- [x] Rate limiting middleware
+- [x] Хранение профилей в базе данных (сейчас в памяти)
 - [ ] PDF экспорт профилей
 - [ ] Генерация водительских прав
 - [ ] Генерация полиса ОМС

@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { ExportModule } from './modules/export/export.module';
 import { RedisThrottleStorage } from './modules/auth/storage/redis-throttle.storage';
-import { ApiKeyThrottlerGuard } from './modules/auth/guards/api-key-throttler.guard';
 
 @Module({
   imports: [
@@ -46,12 +44,7 @@ import { ApiKeyThrottlerGuard } from './modules/auth/guards/api-key-throttler.gu
     ProfilesModule,
     ExportModule,
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ApiKeyThrottlerGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}
 

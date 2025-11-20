@@ -1,13 +1,34 @@
-import { Controller, Post, Get, Body, Param, Delete, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Req,
+  DefaultValuePipe,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 import { ProfilesService } from './profiles.service';
 import { GenerateProfileDto } from './dto/generate-profile.dto';
 import { ApiKeyGuard } from '../auth/guards/api-key.guard';
+import { ApiKeyThrottlerGuard } from '../auth/guards/api-key-throttler.guard';
 import { ApiResponseDto } from '../../types';
+import { ApiKeyEntity } from '../../database/entities/api-key.entity';
+
+interface ApiKeyRequest extends Request {
+  apiKeyEntity?: ApiKeyEntity;
+}
 
 @ApiTags('profiles')
 @Controller('profiles')
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiKeyGuard, ApiKeyThrottlerGuard)
 @ApiBearerAuth('api-key')
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
@@ -19,8 +40,14 @@ export class ProfilesController {
   @ApiResponse({ status: 400, description: 'Невалидные параметры' })
   @ApiResponse({ status: 401, description: 'Неверный API ключ' })
   @ApiResponse({ status: 429, description: 'Превышен rate limit' })
-  async generate(@Body() dto: GenerateProfileDto): Promise<ApiResponseDto<any>> {
-    const profile = await this.profilesService.generate(dto);
+  async generate(
+    @Body() dto: GenerateProfileDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    const apiRequest = req as ApiKeyRequest;
+    const profile = await this.profilesService.generate(dto, {
+      sourceKeyId: apiRequest.apiKeyEntity?.id,
+    });
     return {
       success: true,
       data: {
@@ -63,8 +90,8 @@ export class ProfilesController {
   @Get()
   @ApiOperation({ summary: 'Список профилей' })
   async list(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ): Promise<ApiResponseDto<any>> {
     const result = await this.profilesService.list(page, limit);
     return {

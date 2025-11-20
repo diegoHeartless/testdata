@@ -3,11 +3,12 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { Response } from 'express';
 import { ExportService } from './export.service';
 import { ApiKeyGuard } from '../auth/guards/api-key.guard';
+import { ApiKeyThrottlerGuard } from '../auth/guards/api-key-throttler.guard';
 import { ProfilesService } from '../profiles/profiles.service';
 
 @ApiTags('export')
 @Controller('profiles/:id/export')
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiKeyGuard, ApiKeyThrottlerGuard)
 @ApiBearerAuth('api-key')
 export class ExportController {
   constructor(

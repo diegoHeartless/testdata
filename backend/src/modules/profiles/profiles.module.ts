@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfilesController } from './profiles.controller';
 import { ProfilesService } from './profiles.service';
 import { ProfileService } from '../../services/profile.service';
@@ -8,8 +9,11 @@ import { AddressGenerator } from '../../generators/address.generator';
 import { PassportGenerator } from '../../generators/passport.generator';
 import { INNGenerator } from '../../generators/inn.generator';
 import { SNILSGenerator } from '../../generators/snils.generator';
+import { ProfileEntity } from '../../database/entities/profile.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([ProfileEntity]), AuthModule],
   controllers: [ProfilesController],
   providers: [
     ProfilesService,
