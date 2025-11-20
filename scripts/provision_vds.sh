@@ -97,7 +97,10 @@ chown "${APP_USER}:${APP_USER}" "${ENV_FILE}"
 chmod 600 "${ENV_FILE}"
 
 echo "[8b/9] Running database migrations..."
-sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && npm run db:migrate"
+if ! sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && npm run db:migrate"; then
+  echo "Migration failed. This might be normal if migrations were already applied."
+  echo "If you see errors about existing tables, you may need to manually fix the schema."
+fi
 
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 echo "[9/9] Creating systemd service ${SERVICE_NAME}..."

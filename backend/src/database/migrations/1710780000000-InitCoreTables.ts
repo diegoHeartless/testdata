@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class InitCoreTables1710780000000 implements MigrationInterface {
-  name = 'InitCoreTables1710780000000';
+  name = 'InitCoreTables';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE "api_keys" (
-        "id" uuid NOT NULL,
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "label" varchar(128) NOT NULL,
         "key_hash" text NOT NULL,
         "status" varchar(16) NOT NULL DEFAULT 'active',
@@ -21,7 +21,7 @@ export class InitCoreTables1710780000000 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "profiles" (
-        "id" uuid NOT NULL,
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "payload" jsonb NOT NULL,
         "source_key_id" uuid,
         "expires_at" TIMESTAMPTZ,
@@ -43,7 +43,7 @@ export class InitCoreTables1710780000000 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "exports" (
-        "id" uuid NOT NULL,
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "profile_id" uuid NOT NULL,
         "format" varchar(16) NOT NULL,
         "status" varchar(16) NOT NULL,

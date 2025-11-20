@@ -75,7 +75,14 @@ if [[ ! -d "${BACKEND_DIR}" ]]; then
 fi
 
 echo "[7/9] Installing backend dependencies and building..."
-sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && npm ci && npm run build"
+echo "  Node.js version: $(node -v)"
+echo "  npm version: $(npm -v)"
+if ! sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && rm -rf dist && npm ci && npm run build"; then
+  echo "Build failed. Checking TypeScript version..."
+  sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && npx tsc --version || echo 'TypeScript not found'"
+  echo "Please check the error messages above."
+  exit 1
+fi
 
 ENV_FILE="${BACKEND_DIR}/.env"
 echo "[8/9] Generating .env at ${ENV_FILE}..."
