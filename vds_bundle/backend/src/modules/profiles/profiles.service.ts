@@ -21,7 +21,7 @@ export class ProfilesService {
 
     const entity = this.profileRepository.create({
       id: profile.id,
-      payload: profile,
+      payload: profile as Record<string, unknown>,
       sourceKeyId: options?.sourceKeyId,
       expiresAt: profile.expires_at ? new Date(profile.expires_at) : null,
     });
@@ -103,7 +103,7 @@ export class ProfilesService {
   }
 
   private mapEntityToProfile(entity: ProfileEntity): Profile {
-    const payload = entity.payload;
+    const payload = entity.payload as Profile;
     return {
       ...payload,
       id: entity.id,

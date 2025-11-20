@@ -1,0 +1,11 @@
+{
+  "items": [
+    { "value": "alpha", "weight": 0.25 },
+    { "value": "beta", "weight": 0.75 }
+  ],
+  "meta": {
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+
+

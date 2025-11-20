@@ -1,0 +1,58 @@
+[
+  {
+    "code": "5411",
+    "description": "Grocery Stores, Supermarkets",
+    "category": "groceries",
+    "avg_ticket_min": 500,
+    "avg_ticket_max": 4000,
+    "merchant_names": ["Пятёрочка", "Магнит", "Лента"],
+    "weight": 0.25
+  },
+  {
+    "code": "5812",
+    "description": "Eating Places and Restaurants",
+    "category": "restaurants",
+    "avg_ticket_min": 800,
+    "avg_ticket_max": 6000,
+    "merchant_names": ["Чайхана №1", "IL Патио", "Теремок"],
+    "weight": 0.2
+  },
+  {
+    "code": "5732",
+    "description": "Electronics Stores",
+    "category": "electronics",
+    "avg_ticket_min": 3000,
+    "avg_ticket_max": 50000,
+    "merchant_names": ["М.Видео", "DNS", "Citilink"],
+    "weight": 0.15
+  },
+  {
+    "code": "4111",
+    "description": "Commuter Transport, Trains",
+    "category": "transport",
+    "avg_ticket_min": 200,
+    "avg_ticket_max": 3000,
+    "merchant_names": ["РЖД", "Мосгортранс", "Аэроэкспресс"],
+    "weight": 0.15
+  },
+  {
+    "code": "6011",
+    "description": "Financial Institutions — Manual Cash Disbursements",
+    "category": "finance",
+    "avg_ticket_min": 10000,
+    "avg_ticket_max": 80000,
+    "merchant_names": ["Зарплатный платёж", "Возврат средств", "Банковский перевод"],
+    "weight": 0.15
+  },
+  {
+    "code": "5999",
+    "description": "Miscellaneous Retail Stores",
+    "category": "retail",
+    "avg_ticket_min": 300,
+    "avg_ticket_max": 10000,
+    "merchant_names": ["OZON", "Wildberries", "Яндекс.Маркет"],
+    "weight": 0.1
+  }
+]
+
+

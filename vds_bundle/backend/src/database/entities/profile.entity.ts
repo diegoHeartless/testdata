@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { ApiKeyEntity } from './api-key.entity';
 import { ExportEntity } from './export.entity';
-import { Profile } from '../../types';
 
 @Entity({ name: 'profiles' })
 export class ProfileEntity {
@@ -18,7 +17,7 @@ export class ProfileEntity {
   id: string;
 
   @Column({ type: 'jsonb' })
-  payload: Profile;
+  payload: Record<string, unknown>;
 
   @Column({ name: 'source_key_id', type: 'uuid', nullable: true })
   sourceKeyId?: string;
