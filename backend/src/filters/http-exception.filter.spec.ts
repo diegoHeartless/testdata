@@ -1,14 +1,22 @@
 import { HttpExceptionFilter } from './http-exception.filter';
-import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, HttpException, HttpStatus, LoggerService } from '@nestjs/common';
 import { Response } from 'express';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
   let mockResponse: Partial<Response>;
   let mockRequest: any;
+  let mockLogger: Partial<LoggerService>;
 
   beforeEach(() => {
-    filter = new HttpExceptionFilter();
+    mockLogger = {
+      error: jest.fn(),
+      warn: jest.fn(),
+      log: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+    };
+    filter = new HttpExceptionFilter(mockLogger as LoggerService);
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),

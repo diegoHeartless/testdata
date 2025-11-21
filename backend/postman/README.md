@@ -57,6 +57,21 @@
 
 Используйте **Collection Runner** в Postman для запуска всех запросов последовательно.
 
+## Запуск через Newman
+
+Теперь коллекцию можно прогонять без Postman, используя встроенный скрипт на базе [Newman](https://github.com/postmanlabs/newman).
+
+1. Установите зависимости `npm install`
+2. Запустите `npm run test:postman`
+3. При необходимости прокиньте переменные окружения:
+   - `NEWMAN_BASE_URL` — базовый URL API
+   - `NEWMAN_API_KEY` — ключ для заголовка `X-API-Key`
+   - `NEWMAN_REPORT_PATH` — путь до JSON-репорта (например, `reports/newman.json`)
+   - `NEWMAN_DELAY_MS` — задержка между запросами в миллисекундах
+   - `NEWMAN_ITERATIONS` — количество повторов коллекции
+
+Альтернативно можно передать флаги CLI: `node postman/run-newman.js --base-url=http://localhost:3000/api/v1 --api-key=sk_live_xxx --report=reports/newman.json --delay=250`.
+
 ## Автоматизация
 
 Коллекция автоматически:

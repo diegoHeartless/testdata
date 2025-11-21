@@ -1,20 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { ValidationExceptionFilter } from './filters/validation-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+  
+  // Используем Pino logger
+  const logger = app.get(Logger);
+  app.useLogger(logger);
 
   // Глобальный префикс API
   app.setGlobalPrefix('api/v1');
 
   // Глобальные exception filters
   app.useGlobalFilters(
-    new ValidationExceptionFilter(),
-    new HttpExceptionFilter(),
+    new ValidationExceptionFilter(logger),
+    new HttpExceptionFilter(logger),
   );
 
   // Валидация
@@ -60,8 +67,9 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
+  
+  logger.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();
