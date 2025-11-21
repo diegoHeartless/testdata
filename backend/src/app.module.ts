@@ -6,6 +6,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { ExportModule } from './modules/export/export.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
 import { RedisThrottleStorage } from './modules/auth/storage/redis-throttle.storage';
 import { RequestIdMiddleware } from './middleware/request-id.middleware';
 import { AuditLogMiddleware } from './middleware/audit-log.middleware';
@@ -75,6 +76,7 @@ import { AuditLogMiddleware } from './middleware/audit-log.middleware';
     AuthModule,
     ProfilesModule,
     ExportModule,
+    MetricsModule,
   ],
   providers: [RequestIdMiddleware, AuditLogMiddleware],
 })

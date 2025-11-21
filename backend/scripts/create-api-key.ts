@@ -7,6 +7,7 @@ interface ParsedArgs {
   label?: string;
   rate?: number;
   expiresInDays?: number;
+  role?: 'user' | 'admin';
 }
 
 function parseArgs(): ParsedArgs {
@@ -23,6 +24,9 @@ function parseArgs(): ParsedArgs {
     if (arg === '--expires-in-days') {
       parsed.expiresInDays = Number(args[index + 1]);
     }
+    if (arg === '--role') {
+      parsed.role = args[index + 1] as 'user' | 'admin';
+    }
   });
 
   return parsed;
@@ -35,7 +39,7 @@ function generateApiKey(): string {
 }
 
 async function bootstrap() {
-  const { label = 'default', rate = 100, expiresInDays } = parseArgs();
+  const { label = 'default', rate = 100, expiresInDays, role = 'user' } = parseArgs();
   const apiKey = generateApiKey();
   const keyHash = await bcrypt.hash(apiKey, 12);
 
@@ -53,6 +57,7 @@ async function bootstrap() {
       status: 'active',
       rateLimitPerMin: rate,
       expiresAt,
+      role,
     });
     await repository.save(entity);
     // eslint-disable-next-line no-console
