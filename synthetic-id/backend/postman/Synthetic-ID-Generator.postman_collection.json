@@ -1,0 +1,522 @@
+{
+	"info": {
+		"_postman_id": "synthetic-id-generator-api",
+		"name": "Synthetic ID Generator API",
+		"description": "Smoke tests for Synthetic ID Generator backend API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "your-api-key-here",
+			"type": "string"
+		},
+		{
+			"key": "profile_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Profiles",
+			"item": [
+				{
+					"name": "Generate Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success flag\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test(\"Response contains profile data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('profile');",
+									"    ",
+									"    // Save profile ID for subsequent requests",
+									"    pm.collectionVariables.set('profile_id', jsonData.data.id);",
+									"});",
+									"",
+									"pm.test(\"Profile has required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var profile = jsonData.data.profile;",
+									"    pm.expect(profile).to.have.property('personal');",
+									"    pm.expect(profile).to.have.property('address');",
+									"    pm.expect(profile.personal).to.have.property('first_name');",
+									"    pm.expect(profile.personal).to.have.property('last_name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gender\": \"random\",\n  \"age_range\": [25, 35],\n  \"region\": \"77\",\n  \"include_documents\": [\"passport\", \"inn\", \"snils\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/profiles/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"generate"
+							]
+						},
+						"description": "Генерация нового синтетического профиля с полным набором документов"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Profile (Minimal)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/profiles/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"generate"
+							]
+						},
+						"description": "Генерация профиля с параметрами по умолчанию"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success flag\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test(\"Response contains profile\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('profile');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{profile_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						},
+						"description": "Получение профиля по ID (использует сохранённый profile_id из предыдущего запроса)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success flag\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"pm.test(\"Response contains profiles array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('profiles');",
+									"    pm.expect(jsonData.data.profiles).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Response contains pagination\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('pagination');",
+									"    pm.expect(jsonData.data.pagination).to.have.property('page');",
+									"    pm.expect(jsonData.data.pagination).to.have.property('total');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profiles?page=1&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Номер страницы"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Количество элементов на странице"
+								}
+							]
+						},
+						"description": "Получение списка профилей с пагинацией"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates deletion\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.deleted).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{profile_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						},
+						"description": "Удаление профиля (мягкое удаление через deleted_at)"
+					},
+					"response": []
+				}
+			],
+			"description": "Операции с профилями"
+		},
+		{
+			"name": "Export",
+			"item": [
+				{
+					"name": "Export Profile (JSON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+									"});",
+									"",
+									"pm.test(\"Response is valid JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{profile_id}}/export?format=json",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "json",
+									"description": "Формат экспорта"
+								}
+							]
+						},
+						"description": "Экспорт профиля в JSON формат"
+					},
+					"response": []
+				},
+				{
+					"name": "Export Profile (PDF - Not Implemented)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 501\", function () {",
+									"    pm.response.to.have.status(501);",
+									"});",
+									"",
+									"pm.test(\"Response indicates not implemented\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.code).to.equal('NOT_IMPLEMENTED');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{profile_id}}/export?format=pdf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "pdf",
+									"description": "Формат экспорта (ещё не реализован)"
+								}
+							]
+						},
+						"description": "Экспорт профиля в PDF (ожидается 501 Not Implemented)"
+					},
+					"response": []
+				}
+			],
+			"description": "Экспорт профилей"
+		},
+		{
+			"name": "Error Cases",
+			"item": [
+				{
+					"name": "Unauthorized (Missing API Key)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response indicates unauthorized\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.code).to.equal('UNAUTHORIZED');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/profiles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles"
+							]
+						},
+						"description": "Проверка обработки запроса без API ключа"
+					},
+					"response": []
+				},
+				{
+					"name": "Not Found (Invalid Profile ID)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates not found\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.false;",
+									"    pm.expect(jsonData.error.code).to.equal('NOT_FOUND');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profiles/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						},
+						"description": "Проверка обработки несуществующего профиля"
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты обработки ошибок"
+		}
+	]
+}
+

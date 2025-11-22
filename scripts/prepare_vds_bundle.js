@@ -19,6 +19,8 @@ const ITEMS_TO_COPY = [
   { source: 'backend', destination: 'backend' },
   { source: 'frontend', destination: 'frontend' },
   { source: 'scripts/provision_vds.sh', destination: 'scripts/provision_vds.sh' },
+  { source: 'scripts/diagnose_frontend.sh', destination: 'scripts/diagnose_frontend.sh' },
+  { source: 'scripts/fix_frontend.sh', destination: 'scripts/fix_frontend.sh' },
   { source: 'docs/ARCHITECTURE.md', destination: 'docs/ARCHITECTURE.md' },
   { source: 'docs/PROJECT_PLAN.md', destination: 'docs/PROJECT_PLAN.md' },
   { source: 'README.md', destination: 'README.md' },
@@ -81,13 +83,17 @@ async function writeManifest(targetDir) {
     '',
     '## Дальнейшие шаги',
     '1. Скопируйте папку на VDS (scp/rsync).',
-    '2. Зайдите на сервер, сделайте `chmod +x scripts/provision_vds.sh`.',
+    '2. Зайдите на сервер, сделайте `chmod +x scripts/*.sh`.',
     '3. Запустите `sudo APP_DIR=/opt/synthetic-id ./scripts/provision_vds.sh` и задайте нужные переменные.',
     '',
     '### Переменные окружения для скрипта:',
     '- `INSTALL_FRONTEND=true` (по умолчанию) — установить фронтенд',
     '- `FRONTEND_PORT=5173` — порт для фронтенда',
     '- `API_PORT=3000` — порт для бекенда',
+    '',
+    '### Диагностика проблем:',
+    '- `sudo bash scripts/diagnose_frontend.sh` — диагностика проблем с фронтендом',
+    '- `sudo bash scripts/fix_frontend.sh` — автоматическое исправление проблем',
   ].join('\n');
 
   await fs.writeFile(manifestPath, content, 'utf8');

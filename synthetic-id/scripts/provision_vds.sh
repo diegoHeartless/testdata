@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Bootstrap script for deploying the Synthetic ID Generator backend
+# Bootstrap script for deploying the Synthetic ID Generator (backend + frontend)
 # onto a fresh Debian/Ubuntu-based VDS. Edit the variables in the
 # CONFIG section or pass them as environment variables before running.
 
@@ -18,7 +18,11 @@ DB_NAME="${DB_NAME:-sid_db}"
 DB_USER="${DB_USER:-sid_user}"
 DB_PASS="${DB_PASS:-ChangeMe123!}"
 API_PORT="${API_PORT:-3000}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+FRONTEND_API_URL="${FRONTEND_API_URL:-}"  # Если не указан, будет http://localhost:${API_PORT}/api/v1
 SERVICE_NAME="${SERVICE_NAME:-synthetic-id-backend}"
+FRONTEND_SERVICE_NAME="${FRONTEND_SERVICE_NAME:-synthetic-id-frontend}"
+INSTALL_FRONTEND="${INSTALL_FRONTEND:-true}"
 
 ##############################################
 
@@ -37,25 +41,25 @@ if ! command -v node >/dev/null 2>&1 || [[ "$(node -v 2>/dev/null | sed 's/v//' 
   apt-get install -y nodejs
 fi
 
-echo "[3/9] Installing PostgreSQL + Redis..."
+echo "[3/10] Installing PostgreSQL + Redis..."
 apt-get install -y postgresql postgresql-contrib redis-server
 systemctl enable --now postgresql
 systemctl enable --now redis-server
 
-echo "[4/9] Creating PostgreSQL role/database..."
+echo "[4/10] Creating PostgreSQL role/database..."
 sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1 \
   || sudo -u postgres psql -c "CREATE ROLE ${DB_USER} WITH LOGIN PASSWORD '${DB_PASS}';"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1 \
   || sudo -u postgres createdb -O "${DB_USER}" "${DB_NAME}"
 
-echo "[5/9] Creating application user and directories..."
+echo "[5/10] Creating application user and directories..."
 if ! id -u "${APP_USER}" >/dev/null 2>&1; then
   useradd --system --create-home --shell /bin/bash "${APP_USER}"
 fi
 mkdir -p "${APP_DIR}"
 chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
 
-echo "[6/9] Preparing application sources..."
+echo "[6/10] Preparing application sources..."
 if [[ -n "${REPO_URL}" ]]; then
   if [[ -d "${APP_DIR}/.git" ]]; then
     sudo -u "${APP_USER}" git -C "${APP_DIR}" fetch --all
@@ -74,7 +78,7 @@ if [[ ! -d "${BACKEND_DIR}" ]]; then
   exit 1
 fi
 
-echo "[7/9] Installing backend dependencies and building..."
+echo "[7/10] Installing backend dependencies and building..."
 echo "  Node.js version: $(node -v)"
 echo "  npm version: $(npm -v)"
 if ! sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && rm -rf dist && npm ci && npm run build"; then
@@ -85,22 +89,32 @@ if ! sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && rm -rf dist && npm c
 fi
 
 ENV_FILE="${BACKEND_DIR}/.env"
-echo "[8/9] Generating .env at ${ENV_FILE}..."
+echo "[8/10] Generating .env at ${ENV_FILE}..."
+# Определяем внешний IP для CORS
+EXTERNAL_IP=$(hostname -I | awk '{print $1}' || echo "109.172.101.131")
+FRONTEND_URL_VALUE="http://${EXTERNAL_IP}:${FRONTEND_PORT},http://localhost:${FRONTEND_PORT}"
 cat <<EOF >"${ENV_FILE}"
 NODE_ENV=production
 PORT=${API_PORT}
+HOST=0.0.0.0
 DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}
 REDIS_URL=redis://127.0.0.1:6379
 THROTTLE_LIMIT=100
+FRONTEND_URL=${FRONTEND_URL_VALUE}
+FRONTEND_PORT=${FRONTEND_PORT}
+SERVER_HOST=${EXTERNAL_IP}
 EOF
 chown "${APP_USER}:${APP_USER}" "${ENV_FILE}"
 chmod 600 "${ENV_FILE}"
 
-echo "[8b/9] Running database migrations..."
-sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && npm run db:migrate"
+echo "[8b/10] Running database migrations..."
+if ! sudo -u "${APP_USER}" bash -lc "cd '${BACKEND_DIR}' && npm run db:migrate"; then
+  echo "Migration failed. This might be normal if migrations were already applied."
+  echo "If you see errors about existing tables, you may need to manually fix the schema."
+fi
 
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-echo "[9/9] Creating systemd service ${SERVICE_NAME}..."
+echo "[9/10] Creating systemd service ${SERVICE_NAME}..."
 cat <<EOF >"${SERVICE_FILE}"
 [Unit]
 Description=Synthetic ID Generator backend
@@ -122,9 +136,86 @@ EOF
 systemctl daemon-reload
 systemctl enable --now "${SERVICE_NAME}.service"
 
+# Настраиваем firewall для бэкенда (если установлен ufw)
+if command -v ufw >/dev/null 2>&1; then
+  echo "[9b/10] Configuring firewall for backend port ${API_PORT}..."
+  ufw allow ${API_PORT}/tcp >/dev/null 2>&1 || true
+fi
+
+if [[ "${INSTALL_FRONTEND}" == "true" ]]; then
+  FRONTEND_DIR="${APP_DIR}/frontend"
+  if [[ ! -d "${FRONTEND_DIR}" ]]; then
+    echo "Frontend directory ${FRONTEND_DIR} not found. Skipping frontend installation." >&2
+  else
+    echo "[10/10] Installing frontend dependencies and building..."
+    # Определяем API URL для фронтенда
+    # По умолчанию используем localhost, но если указан внешний IP, используем его
+    if [[ -n "${FRONTEND_API_URL:-}" ]]; then
+      API_URL="${FRONTEND_API_URL}"
+    else
+      # Пытаемся определить внешний IP
+      EXTERNAL_IP=$(hostname -I | awk '{print $1}' || echo "localhost")
+      if [[ "${EXTERNAL_IP}" != "localhost" && "${EXTERNAL_IP}" != "127.0.0.1" ]]; then
+        API_URL="http://${EXTERNAL_IP}:${API_PORT}/api/v1"
+      else
+        API_URL="http://localhost:${API_PORT}/api/v1"
+      fi
+    fi
+    echo "  Using API URL: ${API_URL}"
+    
+    # Собираем фронтенд с переменными окружения
+    if ! sudo -u "${APP_USER}" bash -lc "cd '${FRONTEND_DIR}' && rm -rf dist node_modules && VITE_API_URL='${API_URL}' npm ci && VITE_API_URL='${API_URL}' npm run build"; then
+      echo "Frontend build failed. Check the error messages above." >&2
+      exit 1
+    fi
+
+    # Создаём systemd service для фронтенда через serve
+    # Используем простой serve для статики
+    if ! command -v serve >/dev/null 2>&1; then
+      echo "  Installing serve for static file serving..."
+      npm install -g serve
+    fi
+
+    # Настраиваем firewall (если установлен ufw)
+    if command -v ufw >/dev/null 2>&1; then
+      echo "  Configuring firewall for frontend port ${FRONTEND_PORT}..."
+      ufw allow ${FRONTEND_PORT}/tcp >/dev/null 2>&1 || true
+    fi
+
+    FRONTEND_SERVICE_FILE="/etc/systemd/system/${FRONTEND_SERVICE_NAME}.service"
+    cat <<EOF >"${FRONTEND_SERVICE_FILE}"
+[Unit]
+Description=Synthetic ID Generator frontend
+After=network.target ${SERVICE_NAME}.service
+
+[Service]
+Type=simple
+User=${APP_USER}
+WorkingDirectory=${FRONTEND_DIR}
+ExecStart=$(command -v serve) -s dist -l tcp://0.0.0.0:${FRONTEND_PORT}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable --now "${FRONTEND_SERVICE_NAME}.service"
+    echo "  Frontend service created and started on port ${FRONTEND_PORT}"
+  fi
+else
+  echo "[10/10] Skipping frontend installation (INSTALL_FRONTEND=false)"
+fi
+
 echo ""
 echo "Deployment complete!"
-echo "Service status: systemctl status ${SERVICE_NAME}"
-echo "Logs: journalctl -u ${SERVICE_NAME} -f"
+echo "Backend service status: systemctl status ${SERVICE_NAME}"
+echo "Backend logs: journalctl -u ${SERVICE_NAME} -f"
+if [[ "${INSTALL_FRONTEND}" == "true" ]]; then
+  echo "Frontend service status: systemctl status ${FRONTEND_SERVICE_NAME}"
+  echo "Frontend logs: journalctl -u ${FRONTEND_SERVICE_NAME} -f"
+  echo "Frontend available at: http://$(hostname -I | awk '{print $1}'):${FRONTEND_PORT}"
+fi
 echo "Remember to generate an API key: sudo -u ${APP_USER} bash -lc \"cd '${BACKEND_DIR}' && npm run key:create\""
 

@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class InitCoreTables1710780000000 implements MigrationInterface {
-  name = 'InitCoreTables';
+  name = 'InitCoreTables1710780000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`

@@ -1,14 +1,22 @@
 import { ValidationExceptionFilter } from './validation-exception.filter';
-import { ArgumentsHost, BadRequestException } from '@nestjs/common';
+import { ArgumentsHost, BadRequestException, LoggerService } from '@nestjs/common';
 import { Response } from 'express';
 
 describe('ValidationExceptionFilter', () => {
   let filter: ValidationExceptionFilter;
   let mockResponse: Partial<Response>;
   let mockRequest: any;
+  let mockLogger: Partial<LoggerService>;
 
   beforeEach(() => {
-    filter = new ValidationExceptionFilter();
+    mockLogger = {
+      error: jest.fn(),
+      warn: jest.fn(),
+      log: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+    };
+    filter = new ValidationExceptionFilter(mockLogger as LoggerService);
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
@@ -33,7 +41,7 @@ describe('ValidationExceptionFilter', () => {
 
     filter.catch(exception, mockContext);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.status).toHaveBeenCalledWith(422);
     expect(mockResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
@@ -56,7 +64,7 @@ describe('ValidationExceptionFilter', () => {
 
     filter.catch(exception, mockContext);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(mockResponse.status).toHaveBeenCalledWith(422);
     expect(mockResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,

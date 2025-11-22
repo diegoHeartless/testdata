@@ -30,6 +30,7 @@ describe('ApiKeyGuard', () => {
       label: 'Test',
       keyHash: 'hash',
       status: 'active',
+      role: 'user',
       rateLimitPerMin: 100,
       createdAt: new Date(),
       updatedAt: new Date(),

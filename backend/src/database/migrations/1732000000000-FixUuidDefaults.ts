@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class FixUuidDefaults1732000000000 implements MigrationInterface {
-  name = 'FixUuidDefaults';
+  name = 'FixUuidDefaults1732000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Исправляем api_keys

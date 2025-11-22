@@ -44,14 +44,10 @@ export class ExportController {
     }
 
     if (format === 'pdf') {
-      // TODO: Реализовать PDF экспорт
-      return res.status(501).json({
-        success: false,
-        error: {
-          code: 'NOT_IMPLEMENTED',
-          message: 'PDF export not yet implemented',
-        },
-      });
+      const pdfBuffer = await this.exportService.toPDF(profile);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="profile-${id}.pdf"`);
+      return res.send(pdfBuffer);
     }
 
     return res.status(400).json({

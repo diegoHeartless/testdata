@@ -90,12 +90,19 @@ fi
 
 ENV_FILE="${BACKEND_DIR}/.env"
 echo "[8/10] Generating .env at ${ENV_FILE}..."
+# Определяем внешний IP для CORS
+EXTERNAL_IP=$(hostname -I | awk '{print $1}' || echo "109.172.101.131")
+FRONTEND_URL_VALUE="http://${EXTERNAL_IP}:${FRONTEND_PORT},http://localhost:${FRONTEND_PORT}"
 cat <<EOF >"${ENV_FILE}"
 NODE_ENV=production
 PORT=${API_PORT}
+HOST=0.0.0.0
 DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}
 REDIS_URL=redis://127.0.0.1:6379
 THROTTLE_LIMIT=100
+FRONTEND_URL=${FRONTEND_URL_VALUE}
+FRONTEND_PORT=${FRONTEND_PORT}
+SERVER_HOST=${EXTERNAL_IP}
 EOF
 chown "${APP_USER}:${APP_USER}" "${ENV_FILE}"
 chmod 600 "${ENV_FILE}"
@@ -129,6 +136,12 @@ EOF
 systemctl daemon-reload
 systemctl enable --now "${SERVICE_NAME}.service"
 
+# Настраиваем firewall для бэкенда (если установлен ufw)
+if command -v ufw >/dev/null 2>&1; then
+  echo "[9b/10] Configuring firewall for backend port ${API_PORT}..."
+  ufw allow ${API_PORT}/tcp >/dev/null 2>&1 || true
+fi
+
 if [[ "${INSTALL_FRONTEND}" == "true" ]]; then
   FRONTEND_DIR="${APP_DIR}/frontend"
   if [[ ! -d "${FRONTEND_DIR}" ]]; then
@@ -136,10 +149,19 @@ if [[ "${INSTALL_FRONTEND}" == "true" ]]; then
   else
     echo "[10/10] Installing frontend dependencies and building..."
     # Определяем API URL для фронтенда
-    API_URL="http://localhost:${API_PORT}/api/v1"
+    # По умолчанию используем localhost, но если указан внешний IP, используем его
     if [[ -n "${FRONTEND_API_URL:-}" ]]; then
       API_URL="${FRONTEND_API_URL}"
+    else
+      # Пытаемся определить внешний IP
+      EXTERNAL_IP=$(hostname -I | awk '{print $1}' || echo "localhost")
+      if [[ "${EXTERNAL_IP}" != "localhost" && "${EXTERNAL_IP}" != "127.0.0.1" ]]; then
+        API_URL="http://${EXTERNAL_IP}:${API_PORT}/api/v1"
+      else
+        API_URL="http://localhost:${API_PORT}/api/v1"
+      fi
     fi
+    echo "  Using API URL: ${API_URL}"
     
     # Собираем фронтенд с переменными окружения
     if ! sudo -u "${APP_USER}" bash -lc "cd '${FRONTEND_DIR}' && rm -rf dist node_modules && VITE_API_URL='${API_URL}' npm ci && VITE_API_URL='${API_URL}' npm run build"; then
@@ -154,6 +176,12 @@ if [[ "${INSTALL_FRONTEND}" == "true" ]]; then
       npm install -g serve
     fi
 
+    # Настраиваем firewall (если установлен ufw)
+    if command -v ufw >/dev/null 2>&1; then
+      echo "  Configuring firewall for frontend port ${FRONTEND_PORT}..."
+      ufw allow ${FRONTEND_PORT}/tcp >/dev/null 2>&1 || true
+    fi
+
     FRONTEND_SERVICE_FILE="/etc/systemd/system/${FRONTEND_SERVICE_NAME}.service"
     cat <<EOF >"${FRONTEND_SERVICE_FILE}"
 [Unit]
@@ -164,7 +192,7 @@ After=network.target ${SERVICE_NAME}.service
 Type=simple
 User=${APP_USER}
 WorkingDirectory=${FRONTEND_DIR}
-ExecStart=$(command -v serve) -s dist -l ${FRONTEND_PORT}
+ExecStart=$(command -v serve) -s dist -l tcp://0.0.0.0:${FRONTEND_PORT}
 Restart=on-failure
 RestartSec=5
 
